@@ -6,7 +6,6 @@ using Trip.Models;
 
 namespace Trip.Controllers;
 
-
 [ApiController]
 [Route("api/[controller]")]
 public class TripClientsController : ControllerBase
@@ -19,25 +18,16 @@ public class TripClientsController : ControllerBase
     }
 
     [HttpPost("{idTrip}/clients")]
-    public async Task<IActionResult> AssignClientToTrip(int idTrip, [FromBody] ClientDto clientDto)
+    public async Task<IActionResult> AssignClientToTrip(int idTrip, [FromBody] Client client)
     {
         var trip = await _context.Trips.FindAsync(idTrip);
         if (trip == null || trip.DateFrom <= DateTime.Now)
             return BadRequest("Trip does not exist or has already occurred.");
 
-        if (await _context.Clients.AnyAsync(c => c.Pesel == clientDto.Pesel))
+        if (await _context.Clients.AnyAsync(c => c.Pesel == client.Pesel))
             return BadRequest("Client with this PESEL already exists.");
 
-        var client = new Client
-        {
-            FirstName = clientDto.FirstName,
-            LastName = clientDto.LastName,
-            Email = clientDto.Email,
-            Telephone = clientDto.Telephone,
-            Pesel = clientDto.Pesel,
-            RegisteredAt = DateTime.Now
-        };
-
+        client.RegisteredAt = DateTime.Now;
         trip.Clients.Add(client);
 
         await _context.SaveChangesAsync();
@@ -55,4 +45,3 @@ public class TripClientsController : ControllerBase
         return Ok(client);
     }
 }
-
